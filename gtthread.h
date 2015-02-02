@@ -1,6 +1,12 @@
 #ifndef __GTTHREAD_H
 #define __GTTHREAD_H
 
+
+#define gtthread_t unsigned long int
+
+#include <stdio.h>
+#include <stdlib.h>
+
 /* Must be called before any of the below functions. Failure to do so may
  * result in undefined behavior. 'period' is the scheduling quantum (interval)
  * in microseconds (i.e., 1/1000000 sec.). */
