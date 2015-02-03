@@ -11,8 +11,9 @@
 #include <time.h>
 #include <ucontext.h>
 #include <stdatomic.h>
+#include <signal.h>
 
-typedef enum {RUNNING, QUEUED, FINISHED} status_t;
+typedef enum {ACTIVE, FINISHED} status_t;
 struct gtthread
 {
 	gtthread_t thread_id;
@@ -63,5 +64,13 @@ int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
 
 /* gtthread_mutex_destroy() and gtthread_mutex_trylock() do not need to be
  * implemented */
+
+typedef struct Qnode
+{
+	ucontext_t context;
+	gtthread_t thread_id;
+	Qnode *next;
+}
+
 
 #endif // __GTTHREAD_H
