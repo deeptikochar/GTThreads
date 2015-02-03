@@ -112,6 +112,10 @@ int  gtthread_yield(void)
 {
     //reset timer
     //call scheduler - put at end of queue
+    setitimer(ITIMER_VIRTUAL, &timer, NULL);          
+    gtthread_scheduler(0);          //what int to pass here - maybe set the timer from scheduler based on what we pass here
+
+    //return stuff
 }
 
 int  gtthread_equal(gtthread_t t1, gtthread_t t2)
