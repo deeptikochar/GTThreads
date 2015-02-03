@@ -59,7 +59,7 @@ int  gtthread_create(gtthread_t *thread,
     new_gtthread->thread_id = *thread;
     new_gtthread->status = ACTIVE;                    // Need to decide what status to give it
     new_gtthread->retval = NULL;
-    enqueue_thread_list(new_gtthread);                            // Implement enqueue, dequeue, head and tail
+    insert_thread_list(new_gtthread);                            // Implement enqueue, dequeue, head and tail
     
     ucontext_t new_thread;
     getcontext(&new_thread);
@@ -68,7 +68,7 @@ int  gtthread_create(gtthread_t *thread,
     new_thread.uc_stack_ss_sp = malloc(STACK_SIZE);
     new_thread.uc_stack_ss_size = STACK_SIZE;
     new_thread.uc_stack_ss_flags = 0;
-    makecontext(&new_thread, gtthread_run, 1, start_routine, arg);  
+    makecontext(&new_thread, gtthread_run, 2, start_routine, arg);  
 
     Qnode *new_node = malloc(sizeof(Qnode*));
     new_node->context = new_thread;
@@ -78,7 +78,6 @@ int  gtthread_create(gtthread_t *thread,
     retval = enqueue_sched(new_thread);
     if(retval < 0)
         return -1;
-    //how to call pthread_exit for this thread
 }
 
 
