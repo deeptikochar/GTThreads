@@ -3,6 +3,8 @@
 
 _Atomic(int) *num_threads = 0;
 Qnode *current_Qnode = NULL;
+struct sigaction sig_act;
+struct itimerval timer;
 
 
 void gtthread_init(long period)
@@ -26,8 +28,6 @@ void gtthread_init(long period)
 
     
     // Setting the timer
-    struct sigaction sig_act;
-    struct itimerval timer;
 
     memset(&sig_act, 0, sizeof(&sig_act));
     sig_act.sa_handler = &scheduler;
@@ -82,7 +82,13 @@ int  gtthread_create(gtthread_t *thread,
 }
 
 
-int  gtthread_join(gtthread_t thread, void **status);
+int  gtthread_join(gtthread_t thread, void **status)
+{
+    if(gtthread_equal(gtthread_self(), thread) > 0)
+        return -1;
+
+    // ....
+}
 
 void gtthread_exit(void *retval)
 {
@@ -99,10 +105,15 @@ void gtthread_exit(void *retval)
         ptr->retval = retval;
     }
     //free Qnode - make sure its not used again till it's set
+    free(current_Qnode);
 }
 
 
-int  gtthread_yield(void);
+int  gtthread_yield(void)
+{
+    //reset timer
+    //call scheduler - put at end of queue
+}
 
 int  gtthread_equal(gtthread_t t1, gtthread_t t2)
 {
@@ -131,7 +142,7 @@ int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
 int gtthread_run(void* (*start_routine)(void*), void *arg)
 {
     void *retval;
-    //need to set retval
+    //need to set retval somehow
     start_routine(arg);          //check
     gtthread_exit(retval);
 }
@@ -152,8 +163,14 @@ gtthread_t generate_thread_id()
 
 void gttthread_scheduler(int signum)
 {
-    current_Qnode = dequeue_sched();
-
+    Qnode *next_Qnode;
+    next_Qnode = dequeue_sched();
+    // enqueue current_Qnode
+    enqueue_sched(current_Qnode);
+    // Set current_Qnode to next_Qnode
+    current_Qnode = next_Qnode;
     // switch context
+    if(setcontext(&current_Qnode->context) < 0)                //if there is an error - decide what to do here
+        exit;
 }
 
