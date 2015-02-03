@@ -1,9 +1,9 @@
 #include "gtthread.h"
+#include "structures.h"
 
 _Atomic(int) *num_threads = 0;
+Qnode *current_Qnode = NULL;
 
-Qnode *scheduler_head = NULL;
-Qnode *scheduler_tail = NULL;
 
 void gtthread_init(long period)
 {
@@ -22,6 +22,7 @@ void gtthread_init(long period)
 
     enqueue_thread_list(initial_thread);
     enqueue_sched(initial_node);
+    current_Qnode = initial_node;
 
     
     // Setting the timer
@@ -86,16 +87,41 @@ int  gtthread_join(gtthread_t thread, void **status);
 void gtthread_exit(void *retval)
 {
     atomic_fetch_sub(num_threads, 1);
-    //free the Qnode
-    //set status of gtthread to FINISHED
-    //set retval of gtthread
+
+    gtthread_t thread_id = current_Qnode->thread_id;
+    gtthread *ptr = search_thread_list(thread_id);
+
+    if(ptr == NULL)
+        //do something
+    else
+    {
+        ptr->status = FINISHED;
+        ptr->retval = retval;
+    }
+    //free Qnode - make sure its not used again till it's set
 }
 
 
 int  gtthread_yield(void);
-int  gtthread_equal(gtthread_t t1, gtthread_t t2);
+
+int  gtthread_equal(gtthread_t t1, gtthread_t t2)
+{
+    if(t1 == t2)
+        return 0;           //check what pthread_equal returns
+    else
+        return -1;
+}
+
+
 int  gtthread_cancel(gtthread_t thread);
-gtthread_t gtthread_self(void);
+
+gtthread_t gtthread_self(void)
+{
+    if(current_Qnode == NULL)
+        return -1;
+    
+    return current_Qnode->thread_id;
+}
 
 
 int  gtthread_mutex_init(gtthread_mutex_t *mutex);
@@ -106,7 +132,7 @@ int gtthread_run(void* (*start_routine)(void*), void *arg)
 {
     void *retval;
     //need to set retval
-    start_routine(arg);
+    start_routine(arg);          //check
     gtthread_exit(retval);
 }
 
@@ -114,55 +140,20 @@ gtthread_t generate_thread_id()
 {
     gtthread_t thread_id;
     gtthread *ptr;
-    bool exists;
 
     srand(time(NULL)); 
     while(1)
     {
-        ptr = head;
-        exists = false;
         thread_id = (unsigned long) rand();           // try making a long random number
-        while(ptr != NULL)
-        {
-            if(ptr->thread_id == thread_id)
-            {   
-                exists = true;
-                break;
-            }
-            ptr->ptr->next;
-        }
-        if(found == false)
+        if(search_thread_list(thread_id) == NULL)
              return thread_id;
-     } 
+    } 
 }
 
-void scheduler(int signum)
+void gttthread_scheduler(int signum)
 {
+    current_Qnode = dequeue_sched();
 
+    // switch context
 }
 
-int enqueue_sched(Qnode *new_node)
-{
-    if(scheduler_tail == NULL)
-    {
-        if(scheduler_head == NULL)
-        {
-            scheduler_head = new_node;
-            scheduler_tail = new_node;
-            return 0;
-        }    
-        return -1;
-    }
-    scheduler_tail->next = new_node;
-    new_node->next = NULL;
-    return 0;
-}
-
-Qnode* dequeue_sched()
-{
-    Qnode *ptr = scheduler_head;
-    if(ptr == NULL)
-        return NULL;
-    scheduler_head = scheduler_head->next;
-    return ptr;
-}
