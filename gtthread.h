@@ -3,9 +3,22 @@
 
 
 #define gtthread_t unsigned long int
+#define MAX_NUM_THREADS 20
+#define STACK_SIZE 10240
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <ucontext.h>
+#include <stdatomic.h>
+
+typedef enum {RUNNING, QUEUED, FINISHED} status_t;
+struct gtthread
+{
+	gtthread_t thread_id;
+	status_t status;
+	void *retval;
+}
 
 /* Must be called before any of the below functions. Failure to do so may
  * result in undefined behavior. 'period' is the scheduling quantum (interval)
