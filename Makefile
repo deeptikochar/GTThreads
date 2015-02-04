@@ -7,7 +7,7 @@ CPPFLAGS =          # default is CPPFLAGS = [blank]
 
 all: gtthread
 
-gtthread: gtthread.h gtthread.c 
+gtthread: gtthread.h gtthread.c
 	$(CC) -o $@ $< $(CFLAGS) 
 # default linking command: $(CC) $(LDFLAGS) <foo>.o -o <foo>
 

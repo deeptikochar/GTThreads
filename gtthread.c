@@ -5,6 +5,10 @@ int *num_threads = 0;
 Qnode *current_Qnode = NULL;
 struct sigaction sig_act;
 struct itimerval timer;
+Qnode *scheduler_head = NULL;
+Qnode *scheduler_tail = NULL;
+gtthread *gtthread_head = NULL;
+gtthread *gtthread_tail = NULL;
 
 
 void gtthread_init(long period)
@@ -22,8 +26,8 @@ void gtthread_init(long period)
     initial_thread->status = ACTIVE;
     initial_thread->retval = NULL;
 
-    enqueue_thread_list(initial_thread);
-    enqueue_sched(initial_node);
+    insert_thread_list(gtthread_head, gtthread_tail, initial_thread);
+    enqueue_sched(scheduler_head, scheduler_tail, initial_node);
     current_Qnode = initial_node;
 
     
@@ -60,7 +64,7 @@ int  gtthread_create(gtthread_t *thread,
     new_gtthread->thread_id = *thread;
     new_gtthread->status = ACTIVE;                    // Need to decide what status to give it
     new_gtthread->retval = NULL;
-    insert_thread_list(new_gtthread);                            // Implement enqueue, dequeue, head and tail
+    insert_thread_list(gtthread_head, gtthread_tail, new_gtthread);                            // Implement enqueue, dequeue, head and tail
     
     ucontext_t new_thread;
     getcontext(&new_thread);
@@ -76,7 +80,7 @@ int  gtthread_create(gtthread_t *thread,
     new_node->thread_id = *thread;
     new_node->next = NULL;
 
-    retval = enqueue_sched(new_node);
+    retval = enqueue_sched(scheduler_head, scheduler_tail, new_node);
     if(retval < 0)
         return -1;
 }
@@ -172,9 +176,9 @@ gtthread_t generate_thread_id()
 void gtthread_scheduler(int signum)
 {
     Qnode *next_Qnode;
-    next_Qnode = dequeue_sched();
+    next_Qnode = dequeue_sched(scheduler_head, scheduler_tail);
     // enqueue current_Qnode
-    enqueue_sched(current_Qnode);
+    enqueue_sched(scheduler_head, scheduler_tail, current_Qnode);
     // Set current_Qnode to next_Qnode
     current_Qnode = next_Qnode;
     // switch context

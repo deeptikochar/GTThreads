@@ -1,7 +1,7 @@
 
 #define gtthread_t unsigned long int
 
-//#include "gtthread.h"
+
 #include <ucontext.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,13 +24,9 @@ typedef struct
 	struct Qnode *next;
 } Qnode;
 
-Qnode *scheduler_head = NULL;
-Qnode *scheduler_tail = NULL;
-gtthread *gtthread_head = NULL;
-gtthread *gtthread_tail = NULL;
 
-int enqueue_sched(Qnode *new_node);
-Qnode* dequeue_sched();
+int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node);
+Qnode* dequeue_sched(Qnode *head, Qnode *tail);
 
-void insert_thread_list(gtthread *thread);
+void insert_thread_list(gtthread *head, gtthread *tail, gtthread *thread);
 gtthread* search_thread_list(gtthread_t thread_id);        //Returns ptr if the thread_id is present, NULL if not

@@ -1,53 +1,57 @@
 #include "structures.h"
 
-int enqueue_sched(Qnode *new_node)
+int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node)
 {
-    if(scheduler_tail == NULL)
+    if(tail == NULL)
     {
-        if(scheduler_head == NULL)
+        if(head == NULL)
         {
-            scheduler_head = new_node;
-            scheduler_tail = new_node;
+            head = new_node;
+            tail = new_node;
             return 0;
         }    
         return -1;
     }
     new_node->next = NULL;
-    scheduler_tail->next = new_node;
-    scheduler_tail = new_node;
+    tail->next = new_node;
+    tail = new_node;
     return 0;
 }
 
-Qnode* dequeue_sched()
+Qnode* dequeue_sched(Qnode *head, Qnode *tail)
 {
-    Qnode *ptr = scheduler_head;
+    Qnode *ptr = head;
     if(ptr == NULL)
         return NULL;
-    if(scheduler_head == scheduler_tail)
+    if(head == tail)
     {
-    	scheduler_head = NULL;
-    	scheduler_tail = NULL;
+    	head = NULL;
+    	tail = NULL;
     }
-    scheduler_head = scheduler_head->next;
+    head = head->next;
     return ptr;
 }
 
-void insert_thread_list(gtthread *thread)
+void insert_thread_list(gtthread *head, gtthread *tail, gtthread *thread)
 {
 	thread->next = NULL;
-	if(gtthread_head == NULL)
+	if(head == NULL)
 	{
-		gtthread_head = thread;
-		gtthread_tail = thread;
+		head = thread;
+		tail = thread;
 		return;
 	}
-	gtthread *ptr = gtthread_head;
+	gtthread *ptr = head;
 	while(ptr->next == NULL)
 	{
 		ptr = ptr->next;
 	}
 	ptr->next = thread;
-	gtthread_tail = thread;
+	tail = thread;
 }
 
-gtthread* search_thread_list(gtthread_t thread_id);
+gtthread* search_thread_list(gtthread_t thread_id)
+{
+	gtthread *something;
+	return something;
+}

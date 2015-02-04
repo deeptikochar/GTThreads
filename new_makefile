@@ -1,0 +1,3 @@
+gcc -c structures.h structures.c
+ gcc -c gtthread.h gtthread.c
+gcc structures.o gtthread.o -o gtthread
