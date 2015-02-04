@@ -2,26 +2,27 @@
 
 //_Atomic(int) *num_threads = 0;
 int *num_threads = 0;
-Qnode *current_Qnode = NULL;
 struct sigaction sig_act;
 struct itimerval timer;
-Qnode *scheduler_head = NULL;
-Qnode *scheduler_tail = NULL;
-gtthread *gtthread_head = NULL;
-gtthread *gtthread_tail = NULL;
+struct Qnode *scheduler_head = NULL;
+struct Qnode *scheduler_tail = NULL;
+struct Qnode *current_Qnode = NULL;
+struct gtthread *gtthread_head = NULL;
+struct gtthread *gtthread_tail = NULL;
 
 
 void gtthread_init(long period)
 {
+    printf("Enqueuing stuff\n");
     ucontext_t current;
     getcontext(&current);
-
-    Qnode *initial_node = malloc(sizeof(Qnode*));
+    
+    struct Qnode *initial_node = malloc(sizeof(Qnode*));
     initial_node->context = current;
     initial_node->next = NULL;
     initial_node->thread_id = generate_thread_id();
 
-    gtthread *initial_thread = malloc(sizeof(gtthread*));
+    struct gtthread *initial_thread = malloc(sizeof(gtthread*));
     initial_thread->thread_id = initial_node->thread_id;
     initial_thread->status = ACTIVE;
     initial_thread->retval = NULL;
@@ -32,7 +33,7 @@ void gtthread_init(long period)
 
     
     // Setting the timer
-
+    printf("Setting the timer\n");
     memset(&sig_act, 0, sizeof(&sig_act));
     sig_act.sa_handler = &gtthread_scheduler;
     sigaction(SIGVTALRM, &sig_act, NULL);
@@ -42,6 +43,8 @@ void gtthread_init(long period)
     timer.it_interval.tv_sec = 0;
     timer.it_interval.tv_usec = 250000;
     setitimer(ITIMER_VIRTUAL, &timer, NULL);
+
+    return;
 }
 
 int  gtthread_create(gtthread_t *thread,
@@ -58,7 +61,7 @@ int  gtthread_create(gtthread_t *thread,
     else
         return -1;
 
-    gtthread *new_gtthread = malloc(sizeof(gtthread*));
+    struct gtthread *new_gtthread = malloc(sizeof(gtthread*));
     
     *thread = generate_thread_id();                   
     new_gtthread->thread_id = *thread;
@@ -75,7 +78,7 @@ int  gtthread_create(gtthread_t *thread,
     new_thread.uc_stack.ss_flags = 0;
     makecontext(&new_thread, gtthread_run, 2, start_routine, arg);  
 
-    Qnode *new_node = malloc(sizeof(Qnode*));
+    struct Qnode *new_node = malloc(sizeof(Qnode*));
     new_node->context = new_thread;
     new_node->thread_id = *thread;
     new_node->next = NULL;
@@ -100,7 +103,7 @@ void gtthread_exit(void *retval)
     num_threads--;
 
     gtthread_t thread_id = current_Qnode->thread_id;
-    gtthread *ptr = search_thread_list(thread_id);
+    struct gtthread *ptr = search_thread_list(gtthread_head, thread_id);
 
     if(ptr == NULL)
         //do something here
@@ -162,20 +165,21 @@ int gtthread_run(void* (*start_routine)(void*), void *arg)
 gtthread_t generate_thread_id()
 {
     gtthread_t thread_id;
-    gtthread *ptr;
 
     srand(time(NULL)); 
+    
     while(1)
     {
         thread_id = (unsigned long) rand();           // try making a long random number
-        if(search_thread_list(thread_id) == NULL)
+        if(!if_exists_thread_id(gtthread_head, thread_id))
              return thread_id;
     } 
+
 }
 
 void gtthread_scheduler(int signum)
 {
-    Qnode *next_Qnode;
+    struct Qnode *next_Qnode;
     next_Qnode = dequeue_sched(scheduler_head, scheduler_tail);
     // enqueue current_Qnode
     enqueue_sched(scheduler_head, scheduler_tail, current_Qnode);
@@ -188,5 +192,11 @@ void gtthread_scheduler(int signum)
 
 void main()
 {
+    printf("in main\n");
+    //gtthread_t thread = generate_thread_id();
+    //printf("%lu\n", thread );
+    gtthread_init(100000);
+    print_scheduler_Q(scheduler_head);
+    print_thread_list(gtthread_head);
     return;
 }

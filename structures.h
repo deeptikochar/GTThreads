@@ -8,7 +8,7 @@
 
 typedef enum {ACTIVE, FINISHED} status_t;
 
-typedef struct 
+typedef struct gtthread
 {
 	gtthread_t thread_id;
 	status_t status;
@@ -17,7 +17,7 @@ typedef struct
 } gtthread;
 
 
-typedef struct 
+typedef struct Qnode
 {
 	ucontext_t context;
 	gtthread_t thread_id;
@@ -29,4 +29,5 @@ int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node);
 Qnode* dequeue_sched(Qnode *head, Qnode *tail);
 
 void insert_thread_list(gtthread *head, gtthread *tail, gtthread *thread);
-gtthread* search_thread_list(gtthread_t thread_id);        //Returns ptr if the thread_id is present, NULL if not
+gtthread* search_thread_list(gtthread *head, gtthread_t thread_id);        //Returns ptr if the thread_id is present, NULL if not
+int f_exists_thread_id(gtthread *head, gtthread_t thread_id);

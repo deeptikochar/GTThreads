@@ -50,8 +50,39 @@ void insert_thread_list(gtthread *head, gtthread *tail, gtthread *thread)
 	tail = thread;
 }
 
-gtthread* search_thread_list(gtthread_t thread_id)
+int if_exists_thread_id(gtthread *head, gtthread_t thread_id)
 {
-	gtthread *something;
-	return something;
+    struct gtthread *ptr = head;
+    while(ptr != NULL)
+    {
+        if(ptr->thread_id == thread_id)
+            return 1;
+        ptr = ptr->next;
+    }
+    return 0;
+}
+
+gtthread* search_thread_list(gtthread *head, gtthread_t thread_id)
+{
+	gtthread *ptr;
+}
+
+
+void print_scheduler_Q(Qnode *head)
+{
+    struct gtthread *ptr = head;
+    while(ptr != NULL)
+    {
+        printf("%lu\n", ptr->thread_id);
+        ptr = ptr->next;
+    }
+}
+void print_thread_list(gtthread *head)
+{
+    struct gtthread *ptr = head;
+    while(ptr != NULL)
+    {
+        printf("%lu status: %d\n", ptr->thread_id, ptr->status);
+        ptr = ptr->next;
+    }
 }
