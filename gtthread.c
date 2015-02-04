@@ -177,3 +177,7 @@ void gttthread_scheduler(int signum)
         exit;
 }
 
+void main()
+{
+    return;
+}
