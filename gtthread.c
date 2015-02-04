@@ -1,7 +1,7 @@
 #include "gtthread.h"
-#include "structures.h"
 
-_Atomic(int) *num_threads = 0;
+//_Atomic(int) *num_threads = 0;
+int *num_threads = 0;
 Qnode *current_Qnode = NULL;
 struct sigaction sig_act;
 struct itimerval timer;
@@ -30,8 +30,8 @@ void gtthread_init(long period)
     // Setting the timer
 
     memset(&sig_act, 0, sizeof(&sig_act));
-    sig_act.sa_handler = &scheduler;
-    sigaction(SIGVTALARM, &sig_act, NULL);
+    sig_act.sa_handler = &gtthread_scheduler;
+    sigaction(SIGVTALRM, &sig_act, NULL);
 
     timer.it_value.tv_sec = 0;
     timer.it_value.tv_usec = 250000;
@@ -46,9 +46,10 @@ int  gtthread_create(gtthread_t *thread,
 {
     int retval = 0;
     //The value can change after reading - need to fix this. Disable context switch
-    if(*num_threads < MAX_THREADS)
+    if(*num_threads < MAX_NUM_THREADS)
     {
-        atomic_fetch_add(num_threads, 1);
+        //atomic_fetch_add(num_threads, 1);
+	num_threads++;
     }
     else
         return -1;
@@ -65,9 +66,9 @@ int  gtthread_create(gtthread_t *thread,
     getcontext(&new_thread);
     
     new_thread.uc_link = 0;
-    new_thread.uc_stack_ss_sp = malloc(STACK_SIZE);
-    new_thread.uc_stack_ss_size = STACK_SIZE;
-    new_thread.uc_stack_ss_flags = 0;
+    new_thread.uc_stack.ss_sp = malloc(STACK_SIZE);
+    new_thread.uc_stack.ss_size = STACK_SIZE;
+    new_thread.uc_stack.ss_flags = 0;
     makecontext(&new_thread, gtthread_run, 2, start_routine, arg);  
 
     Qnode *new_node = malloc(sizeof(Qnode*));
@@ -75,7 +76,7 @@ int  gtthread_create(gtthread_t *thread,
     new_node->thread_id = *thread;
     new_node->next = NULL;
 
-    retval = enqueue_sched(new_thread);
+    retval = enqueue_sched(new_node);
     if(retval < 0)
         return -1;
 }
@@ -91,13 +92,15 @@ int  gtthread_join(gtthread_t thread, void **status)
 
 void gtthread_exit(void *retval)
 {
-    atomic_fetch_sub(num_threads, 1);
+    //atomic_fetch_sub(num_threads, 1);
+    num_threads--;
 
     gtthread_t thread_id = current_Qnode->thread_id;
     gtthread *ptr = search_thread_list(thread_id);
 
     if(ptr == NULL)
-        //do something
+        //do something here
+        return;
     else
     {
         ptr->status = FINISHED;
@@ -126,8 +129,9 @@ int  gtthread_equal(gtthread_t t1, gtthread_t t2)
         return -1;
 }
 
-
+/*
 int  gtthread_cancel(gtthread_t thread);
+*/
 
 gtthread_t gtthread_self(void)
 {
@@ -136,11 +140,12 @@ gtthread_t gtthread_self(void)
     
     return current_Qnode->thread_id;
 }
-
+/*
 
 int  gtthread_mutex_init(gtthread_mutex_t *mutex);
 int  gtthread_mutex_lock(gtthread_mutex_t *mutex);
 int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
+*/
 
 int gtthread_run(void* (*start_routine)(void*), void *arg)
 {
@@ -164,7 +169,7 @@ gtthread_t generate_thread_id()
     } 
 }
 
-void gttthread_scheduler(int signum)
+void gtthread_scheduler(int signum)
 {
     Qnode *next_Qnode;
     next_Qnode = dequeue_sched();

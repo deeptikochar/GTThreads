@@ -1,26 +1,32 @@
 
-#include "gtthread.h"
+#define gtthread_t unsigned long int
+
+//#include "gtthread.h"
+#include <ucontext.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef enum {ACTIVE, FINISHED} status_t;
 
-struct gtthread
+typedef struct 
 {
 	gtthread_t thread_id;
 	status_t status;
 	void *retval;
-	gtthread *next;
-}
+	struct gtthread *next;
+} gtthread;
 
-typedef struct Qnode
+
+typedef struct 
 {
 	ucontext_t context;
 	gtthread_t thread_id;
-	Qnode *next;
-}
+	struct Qnode *next;
+} Qnode;
 
 Qnode *scheduler_head = NULL;
 Qnode *scheduler_tail = NULL;
-gtthread *gtthread_head = NULL:
+gtthread *gtthread_head = NULL;
 gtthread *gtthread_tail = NULL;
 
 int enqueue_sched(Qnode *new_node);

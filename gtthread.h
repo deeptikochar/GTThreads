@@ -2,7 +2,7 @@
 #define __GTTHREAD_H
 
 
-#define gtthread_t unsigned long int
+
 #define MAX_NUM_THREADS 20
 #define STACK_SIZE 10240
 
@@ -10,8 +10,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ucontext.h>
-#include <stdatomic.h>
+//#include <stdatomic.h>
 #include <signal.h>
+#include <sys/time.h>
+#include "structures.h"
+
 
 
 
@@ -49,16 +52,23 @@ int  gtthread_cancel(gtthread_t thread);
 /* see man pthread_self(3) */
 gtthread_t gtthread_self(void);
 
+int gtthread_run(void* (*start_routine)(void*), void *arg);
+gtthread_t generate_thread_id();
+void gtthread_scheduler(int signum);
+
 
 /* see man pthread_mutex(3); except init does not have the mutexattr parameter,
  * and should behave as if mutexattr is NULL (i.e., default attributes); also,
  * static initializers do not need to be implemented */
+/*
 int  gtthread_mutex_init(gtthread_mutex_t *mutex);
 int  gtthread_mutex_lock(gtthread_mutex_t *mutex);
 int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
+*/
 
 /* gtthread_mutex_destroy() and gtthread_mutex_trylock() do not need to be
  * implemented */
+
 
 
 
