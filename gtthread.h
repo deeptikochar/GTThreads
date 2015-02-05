@@ -31,6 +31,7 @@ int  gtthread_create(gtthread_t *thread,
                      void *(*start_routine)(void *),
                      void *arg);
 
+
 /* see man pthread_join(3) */
 int  gtthread_join(gtthread_t thread, void **status);
 

@@ -2,6 +2,7 @@
 
 int enqueue_sched(Qnode *new_node)
 {
+    new_node->next = NULL;
     if(scheduler_tail == NULL)
     {
         if(scheduler_head == NULL)
@@ -12,7 +13,6 @@ int enqueue_sched(Qnode *new_node)
         }    
         return -1;
     }
-    new_node->next = NULL;
     scheduler_tail->next = new_node;                                                                                                                                                                                              
     scheduler_tail = new_node;
     return 0;
@@ -32,6 +32,11 @@ Qnode* dequeue_sched()
     return ptr;
 }
 
+int delete_from_queue_sched(gtthread_t thread_id)
+{
+
+}
+
 void insert_thread_list(gtthread *thread)
 {
 	thread->next = NULL;
@@ -40,15 +45,10 @@ void insert_thread_list(gtthread *thread)
 	{
 		gtthread_head = thread;                                                                                                                                  
 		gtthread_tail = thread;
-        printf("%lu\n %p\n", gtthread_head->thread_id, gtthread_head);
+//        printf("%lu\n %p\n", gtthread_head->thread_id, gtthread_head);
 		return;
 	}
-	gtthread *ptr = gtthread_head;
-	while(ptr->next == NULL)
-	{
-		ptr = ptr->next;
-	}
-	ptr->next = thread;                                                                                                                                               
+	gtthread_tail->next = thread;                                                                                                                                              
 	gtthread_tail = thread;
     printf("%lu\n", gtthread_tail->thread_id);
 }
