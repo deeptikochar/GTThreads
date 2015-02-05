@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef enum {ACTIVE, FINISHED} status_t;
+typedef enum {ACTIVE, FINISHED, CANCELLED} status_t;
 
 typedef struct gtthread
 {

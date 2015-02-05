@@ -55,6 +55,9 @@ gtthread_t gtthread_self(void);
 
 int gtthread_run(void* (*start_routine)(void*), void *arg);
 gtthread_t generate_thread_id();
+
+void block_signal();
+void unblock_signal();
 void gtthread_scheduler(int signum);
 
 
