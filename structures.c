@@ -1,4 +1,4 @@
-#include "structures.h"
+#include "structures.h"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ude "structures.h"
 
 int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node)
 {
@@ -8,12 +8,12 @@ int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node)
         {
             head = new_node;
             tail = new_node;
-            return 0;
+            return 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
         }    
         return -1;
     }
     new_node->next = NULL;
-    tail->next = new_node;
+    tail->next = new_node;                                                                                                                                                                                              
     tail = new_node;
     return 0;
 }
@@ -32,22 +32,25 @@ Qnode* dequeue_sched(Qnode *head, Qnode *tail)
     return ptr;
 }
 
-void insert_thread_list(gtthread *head, gtthread *tail, gtthread *thread)
+void insert_thread_list(gtthread **head, gtthread **tail, gtthread **thread)
 {
-	thread->next = NULL;
-	if(head == NULL)
+	*thread->next = NULL;
+    printf("a\n");
+	if(*head == NULL)
 	{
-		head = thread;
-		tail = thread;
+		*head = *thread;                                                                                                                                  
+		*tail = *thread;
+        printf("%lu\n %p\n", *head->thread_id, *head);
 		return;
 	}
-	gtthread *ptr = head;
+	gtthread *ptr = *head;
 	while(ptr->next == NULL)
 	{
 		ptr = ptr->next;
 	}
-	ptr->next = thread;
-	tail = thread;
+	ptr->next = *thread;                                                                                                                                               
+	*tail = *thread;
+    printf("%lu\n", *tail->thread_id);
 }
 
 int if_exists_thread_id(gtthread *head, gtthread_t thread_id)
@@ -70,7 +73,7 @@ gtthread* search_thread_list(gtthread *head, gtthread_t thread_id)
 
 void print_scheduler_Q(Qnode *head)
 {
-    struct gtthread *ptr = head;
+    struct Qnode *ptr = head;
     while(ptr != NULL)
     {
         printf("%lu\n", ptr->thread_id);

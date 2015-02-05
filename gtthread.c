@@ -17,19 +17,23 @@ void gtthread_init(long period)
     ucontext_t current;
     getcontext(&current);
     
-    struct Qnode *initial_node = malloc(sizeof(Qnode*));
+    struct Qnode *initial_node = malloc(sizeof(Qnode));
     initial_node->context = current;
     initial_node->next = NULL;
     initial_node->thread_id = generate_thread_id();
 
-    struct gtthread *initial_thread = malloc(sizeof(gtthread*));
+    struct gtthread *initial_thread = malloc(sizeof(gtthread));
     initial_thread->thread_id = initial_node->thread_id;
     initial_thread->status = ACTIVE;
     initial_thread->retval = NULL;
 
-    insert_thread_list(gtthread_head, gtthread_tail, initial_thread);
+    printf("%lu\n", initial_thread->thread_id);
+
+    insert_thread_list(&gtthread_head, &gtthread_tail, &initial_thread);
     enqueue_sched(scheduler_head, scheduler_tail, initial_node);
     current_Qnode = initial_node;
+
+    printf("%p\n", gtthread_head);
 
     
     // Setting the timer
@@ -61,13 +65,17 @@ int  gtthread_create(gtthread_t *thread,
     else
         return -1;
 
-    struct gtthread *new_gtthread = malloc(sizeof(gtthread*));
+    struct gtthread *new_gtthread = malloc(sizeof(gtthread));
     
-    *thread = generate_thread_id();                   
+    gtthread_t temp = generate_thread_id();
+    *thread = temp;
+    printf("5");
+    printf("%lu", generate_thread_id());                 
     new_gtthread->thread_id = *thread;
+    printf("%lu\n", new_gtthread->thread_id);
     new_gtthread->status = ACTIVE;                    // Need to decide what status to give it
     new_gtthread->retval = NULL;
-    insert_thread_list(gtthread_head, gtthread_tail, new_gtthread);                            // Implement enqueue, dequeue, head and tail
+    insert_thread_list(&gtthread_head, &gtthread_tail, &new_gtthread);                            // Implement enqueue, dequeue, head and tail
     
     ucontext_t new_thread;
     getcontext(&new_thread);
@@ -78,7 +86,7 @@ int  gtthread_create(gtthread_t *thread,
     new_thread.uc_stack.ss_flags = 0;
     makecontext(&new_thread, gtthread_run, 2, start_routine, arg);  
 
-    struct Qnode *new_node = malloc(sizeof(Qnode*));
+    struct Qnode *new_node = malloc(sizeof(Qnode));
     new_node->context = new_thread;
     new_node->thread_id = *thread;
     new_node->next = NULL;
@@ -195,7 +203,10 @@ void main()
     printf("in main\n");
     //gtthread_t thread = generate_thread_id();
     //printf("%lu\n", thread );
+    int i = 1;
+    printf("%d\n",i++);
     gtthread_init(100000);
+    printf("%d\n",i++);
     print_scheduler_Q(scheduler_head);
     print_thread_list(gtthread_head);
     return;
