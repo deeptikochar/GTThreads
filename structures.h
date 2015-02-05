@@ -24,14 +24,18 @@ typedef struct Qnode
 	struct Qnode *next;
 } Qnode;
 
+extern struct gtthread *gtthread_head;
+extern struct gtthread *gtthread_tail;
+extern struct Qnode *scheduler_head;
+extern struct Qnode *scheduler_tail;
 
-int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node);
-Qnode* dequeue_sched(Qnode *head, Qnode *tail);
+int enqueue_sched(Qnode *new_node);
+Qnode* dequeue_sched();
 
-void insert_thread_list(gtthread **head, gtthread **tail, gtthread **thread);
-gtthread* search_thread_list(gtthread *head, gtthread_t thread_id);        //Returns ptr if the thread_id is present, NULL if not
-int f_exists_thread_id(gtthread *head, gtthread_t thread_id);
+void insert_thread_list(gtthread *thread);
+gtthread* search_thread_list(gtthread_t thread_id);        //Returns ptr if the thread_id is present, NULL if not
+int if_exists_thread_id(gtthread_t thread_id);
 
 
-void print_scheduler_Q(Qnode *head);
-void print_thread_list(gtthread *head);
+void print_scheduler_Q();
+void print_thread_list();

@@ -29,8 +29,8 @@ void gtthread_init(long period)
 
     printf("%lu\n", initial_thread->thread_id);
 
-    insert_thread_list(&gtthread_head, &gtthread_tail, &initial_thread);
-    enqueue_sched(scheduler_head, scheduler_tail, initial_node);
+    insert_thread_list(initial_thread);
+    enqueue_sched(initial_node);
     current_Qnode = initial_node;
 
     printf("%p\n", gtthread_head);
@@ -75,7 +75,7 @@ int  gtthread_create(gtthread_t *thread,
     printf("%lu\n", new_gtthread->thread_id);
     new_gtthread->status = ACTIVE;                    // Need to decide what status to give it
     new_gtthread->retval = NULL;
-    insert_thread_list(&gtthread_head, &gtthread_tail, &new_gtthread);                            // Implement enqueue, dequeue, head and tail
+    insert_thread_list(new_gtthread);                            // Implement enqueue, dequeue, head and tail
     
     ucontext_t new_thread;
     getcontext(&new_thread);
@@ -91,7 +91,7 @@ int  gtthread_create(gtthread_t *thread,
     new_node->thread_id = *thread;
     new_node->next = NULL;
 
-    retval = enqueue_sched(scheduler_head, scheduler_tail, new_node);
+    retval = enqueue_sched(new_node);
     if(retval < 0)
         return -1;
 }
@@ -102,7 +102,8 @@ int  gtthread_join(gtthread_t thread, void **status)
     if(gtthread_equal(gtthread_self(), thread) > 0)
         return -1;
 
-    // ....
+    // check the status. if it is finished get the return value
+    // if it is active, wait
 }
 
 void gtthread_exit(void *retval)
@@ -111,7 +112,7 @@ void gtthread_exit(void *retval)
     num_threads--;
 
     gtthread_t thread_id = current_Qnode->thread_id;
-    struct gtthread *ptr = search_thread_list(gtthread_head, thread_id);
+    struct gtthread *ptr = search_thread_list(thread_id);
 
     if(ptr == NULL)
         //do something here
@@ -179,7 +180,7 @@ gtthread_t generate_thread_id()
     while(1)
     {
         thread_id = (unsigned long) rand();           // try making a long random number
-        if(!if_exists_thread_id(gtthread_head, thread_id))
+        if(!if_exists_thread_id(thread_id))
              return thread_id;
     } 
 
@@ -188,9 +189,9 @@ gtthread_t generate_thread_id()
 void gtthread_scheduler(int signum)
 {
     struct Qnode *next_Qnode;
-    next_Qnode = dequeue_sched(scheduler_head, scheduler_tail);
+    next_Qnode = dequeue_sched();
     // enqueue current_Qnode
-    enqueue_sched(scheduler_head, scheduler_tail, current_Qnode);
+    enqueue_sched(current_Qnode);
     // Set current_Qnode to next_Qnode
     current_Qnode = next_Qnode;
     // switch context
@@ -207,7 +208,7 @@ void main()
     printf("%d\n",i++);
     gtthread_init(100000);
     printf("%d\n",i++);
-    print_scheduler_Q(scheduler_head);
-    print_thread_list(gtthread_head);
+    print_scheduler_Q();
+    print_thread_list();
     return;
 }

@@ -1,61 +1,61 @@
-#include "structures.h"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ude "structures.h"
+#include "structures.h"
 
-int enqueue_sched(Qnode *head, Qnode *tail, Qnode *new_node)
+int enqueue_sched(Qnode *new_node)
 {
-    if(tail == NULL)
+    if(scheduler_tail == NULL)
     {
-        if(head == NULL)
+        if(scheduler_head == NULL)
         {
-            head = new_node;
-            tail = new_node;
+            scheduler_head = new_node;
+            scheduler_tail = new_node;
             return 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
         }    
         return -1;
     }
     new_node->next = NULL;
-    tail->next = new_node;                                                                                                                                                                                              
-    tail = new_node;
+    scheduler_tail->next = new_node;                                                                                                                                                                                              
+    scheduler_tail = new_node;
     return 0;
 }
 
-Qnode* dequeue_sched(Qnode *head, Qnode *tail)
+Qnode* dequeue_sched()
 {
-    Qnode *ptr = head;
+    Qnode *ptr = scheduler_head;
     if(ptr == NULL)
         return NULL;
-    if(head == tail)
+    if(scheduler_head == scheduler_tail)
     {
-    	head = NULL;
-    	tail = NULL;
+    	scheduler_head = NULL;
+    	scheduler_tail = NULL;
     }
-    head = head->next;
+    scheduler_head = scheduler_head->next;
     return ptr;
 }
 
-void insert_thread_list(gtthread **head, gtthread **tail, gtthread **thread)
+void insert_thread_list(gtthread *thread)
 {
-	*thread->next = NULL;
+	thread->next = NULL;
     printf("a\n");
-	if(*head == NULL)
+	if(gtthread_head == NULL)
 	{
-		*head = *thread;                                                                                                                                  
-		*tail = *thread;
-        printf("%lu\n %p\n", *head->thread_id, *head);
+		gtthread_head = thread;                                                                                                                                  
+		gtthread_tail = thread;
+        printf("%lu\n %p\n", gtthread_head->thread_id, gtthread_head);
 		return;
 	}
-	gtthread *ptr = *head;
+	gtthread *ptr = gtthread_head;
 	while(ptr->next == NULL)
 	{
 		ptr = ptr->next;
 	}
-	ptr->next = *thread;                                                                                                                                               
-	*tail = *thread;
-    printf("%lu\n", *tail->thread_id);
+	ptr->next = thread;                                                                                                                                               
+	gtthread_tail = thread;
+    printf("%lu\n", gtthread_tail->thread_id);
 }
 
-int if_exists_thread_id(gtthread *head, gtthread_t thread_id)
+int if_exists_thread_id(gtthread_t thread_id)
 {
-    struct gtthread *ptr = head;
+    struct gtthread *ptr = gtthread_head;
     while(ptr != NULL)
     {
         if(ptr->thread_id == thread_id)
@@ -65,24 +65,26 @@ int if_exists_thread_id(gtthread *head, gtthread_t thread_id)
     return 0;
 }
 
-gtthread* search_thread_list(gtthread *head, gtthread_t thread_id)
+gtthread* search_thread_list(gtthread_t thread_id)
 {
 	gtthread *ptr;
 }
 
 
-void print_scheduler_Q(Qnode *head)
+void print_scheduler_Q()
 {
-    struct Qnode *ptr = head;
+    printf("Printing scheduler queue\n");
+    struct Qnode *ptr = scheduler_head;
     while(ptr != NULL)
     {
         printf("%lu\n", ptr->thread_id);
         ptr = ptr->next;
     }
 }
-void print_thread_list(gtthread *head)
+void print_thread_list()
 {
-    struct gtthread *ptr = head;
+    printf("Printing thread list\n");
+    struct gtthread *ptr = gtthread_head;
     while(ptr != NULL)
     {
         printf("%lu status: %d\n", ptr->thread_id, ptr->status);
