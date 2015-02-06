@@ -3,7 +3,7 @@
 
 
 
-#define MAX_NUM_THREADS 20
+#define MAX_NUM_THREADS 150
 #define STACK_SIZE 10240
 
 #include <stdio.h>

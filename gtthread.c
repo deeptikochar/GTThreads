@@ -17,7 +17,7 @@ void mock_scheduler(int signum);
 
 void gtthread_init(long period)
 {
-    printf("Enqueuing stuff\n");
+ //   printf("Enqueuing stuff\n");
     ucontext_t current;
     getcontext(&current);
     
@@ -31,17 +31,17 @@ void gtthread_init(long period)
     initial_thread->status = ACTIVE;
     initial_thread->retval = NULL;
 
-    printf("%lu\n", initial_thread->thread_id);
+//    printf("%lu\n", initial_thread->thread_id);
 
     insert_thread_list(initial_thread);
 //    enqueue_sched(initial_node);   - don't enqueue the current thread
     current_Qnode = initial_node;
 
-    printf("%p\n", gtthread_head);
+//    printf("%p\n", gtthread_head);
 
     
     // Setting the timer
-    printf("Setting the timer\n");
+//    printf("Setting the timer\n");
     memset(&sig_act, 0, sizeof(&sig_act));
     sig_act.sa_handler = &gtthread_scheduler;         //change to actual scheduler
     sigaction(SIGVTALRM, &sig_act, NULL);
@@ -82,7 +82,7 @@ int  gtthread_create(gtthread_t *thread,
     unblock_signal();
 
     new_gtthread->thread_id = *thread;
-    printf("%lu\n", new_gtthread->thread_id);
+ //   printf("%lu\n", new_gtthread->thread_id);
     new_gtthread->status = ACTIVE;                    // Need to decide what status to give it
     new_gtthread->retval = NULL;
     
@@ -108,7 +108,7 @@ int  gtthread_create(gtthread_t *thread,
 
 int  gtthread_join(gtthread_t thread, void **status)
 {
-    if(status == NULL)
+    if(status != NULL)
         *status = NULL;
     if(gtthread_equal(gtthread_self(), thread) > 0)
         return -1;
@@ -123,7 +123,7 @@ int  gtthread_join(gtthread_t thread, void **status)
     {
         if(to_be_joined->status == FINISHED)
         {
-            if(status == NULL)
+            if(status != NULL)
                 *status = to_be_joined->retval;
             return 0;
         }
@@ -138,7 +138,7 @@ void gtthread_exit(void *retval)
     // might need to block signals
     //atomic_fetch_sub(num_threads, 1);
     block_signal();
-    printf("In gtthread_exit\n");
+//    printf("In gtthread_exit\n");
     num_threads--;
 
     gtthread_t thread_id = current_Qnode->thread_id;
@@ -173,9 +173,9 @@ int  gtthread_yield(void)
 int  gtthread_equal(gtthread_t t1, gtthread_t t2)
 {
     if(t1 == t2)
-        return 0;           //check what pthread_equal returns
+        return 1;           //check what pthread_equal returns
     else
-        return -1;
+        return 0;
 }
 
 
@@ -237,7 +237,7 @@ int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
 
 int gtthread_run(void* (*start_routine)(void*), void *arg)
 {
-    printf("In gtthread_run\n");
+//    printf("In gtthread_run\n");
     void *retval;
     //need to set retval somehow
     retval = (void *) start_routine(arg);          //check
@@ -265,9 +265,7 @@ gtthread_t generate_thread_id()
 void gtthread_scheduler(int signum)
 {
     block_signal();
-    printf("In scheduler\n");
-    if(signum > 0)
-        printf("Timer expired- sched\n");
+
     
     struct Qnode *next_Qnode;
     struct Qnode *prev_Qnode;
@@ -275,11 +273,11 @@ void gtthread_scheduler(int signum)
 //    printf("here");
     if(next_Qnode == NULL) 
     {    
-        printf("Next node is null\n");                         //There are no other threads 
+//        printf("Next node is null\n");                         //There are no other threads 
         unblock_signal();
         return;
     }
-    printf("Dequeued node id %lu\n", next_Qnode->thread_id);
+ //   printf("Dequeued node id %lu\n", next_Qnode->thread_id);
     if(signum >= 0)
     {
         enqueue_sched(current_Qnode);                   // enqueue current_Qnode
@@ -288,7 +286,7 @@ void gtthread_scheduler(int signum)
     // Set current_Qnode to next_Qnode
 //    print_scheduler_Q();    
     current_Qnode = next_Qnode;
-    printf("Current thread is %lu\n", gtthread_self() );
+//    printf("Current thread is %lu\n", gtthread_self() );
     setitimer(ITIMER_VIRTUAL, &timer, NULL);
     // switch context
     if(signum >= 0)
@@ -307,7 +305,7 @@ void gtthread_scheduler(int signum)
 
 void mock_scheduler(int signum)
 {
-    printf("This is a new thread\n");
+ //   printf("This is a new thread\n");
     int i, j, k;
     for (i = 0; i < 10000; i++)
     {
@@ -325,7 +323,7 @@ void unblock_signal()
 {
     sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
-
+/*
 void main()
 {
     printf("in main\n");
@@ -344,7 +342,7 @@ void main()
  //   struct Qnode *node = dequeue_sched();
    // print_scheduler_Q();
  //   block_signal();
-/*    struct Qnode *next = dequeue_sched();
+    struct Qnode *next = dequeue_sched();
     struct  Qnode *prev = current_Qnode;
 
     if(next == NULL || prev == NULL)
@@ -353,7 +351,7 @@ void main()
          printf("not swapped\n");
 
     printf("swapped\n");
-*/    for(i=0; i< 100000; i++)
+    for(i=0; i< 100000; i++)
     {
         for(j=0; j< 10000;j++)
         {
@@ -370,3 +368,4 @@ void main()
     return;
 }
 
+*/
