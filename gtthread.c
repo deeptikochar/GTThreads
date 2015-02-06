@@ -257,121 +257,31 @@ gtthread_t generate_thread_id()
     } 
 }
 
-void gtthread_scheduler(int signum)
-{
-    block_signal();
 
-    
-    struct Qnode *next_Qnode;
-    struct Qnode *prev_Qnode;
-    next_Qnode = dequeue_sched();
-//    printf("here");
-    if(next_Qnode == NULL) 
-    {    
-//        printf("Next node is null\n");                         //There are no other threads 
-        unblock_signal();
-        return;
-    }
- //   printf("Dequeued node id %lu\n", next_Qnode->thread_id);
-    if(signum >= 0)
-    {
-        enqueue_sched(current_Qnode);                   // enqueue current_Qnode
-        prev_Qnode = current_Qnode;
-    }
-    // Set current_Qnode to next_Qnode
-//    print_scheduler_Q();    
-    current_Qnode = next_Qnode;
-//    printf("Current thread is %lu\n", gtthread_self() );
-    setitimer(ITIMER_VIRTUAL, &timer, NULL);
-    // switch context
-    if(signum >= 0)
-    {
-        if(swapcontext(&(prev_Qnode->context), &(current_Qnode->context)) < 0)                //if there is an error - decide what to do here
-            exit;
 
-    }
-    else
-    {
-        setcontext(&current_Qnode->context);
-    }
-    unblock_signal();
-    
-}
+
+
+
+
+
+int shared = 0;
+struct gtthread_mutex_t mutex;
 
 void mock_scheduler(int signum)
 {
  //   printf("This is a new thread\n");
     int i, j, k;
-    for (i = 0; i < 10000; i++)
+    for (i = 0; i < 100; i++)
     {
         for(j = 0; j < 100; j++)
-            k=1;
-    }
-}
-
-void block_signal()
-{
-    sigprocmask(SIG_BLOCK, &mask, NULL);
-}
-
-void unblock_signal()
-{
-    sigprocmask(SIG_UNBLOCK, &mask, NULL);
-}
-
-
-int  gtthread_mutex_init(gtthread_mutex_t *mutex)
-{
-    mutex->lock = 0;
-    mutex->owner = 0;   
-}
-int  gtthread_mutex_lock(gtthread_mutex_t *mutex)
-{
-    block_signal();
-    if(mutex->lock == 2)
-    {
-        unblock_signal();
-        return -1;
-    }
-    if(mutex->lock == 1 && mutex->owner == gtthread_self())
-    {
-        unblock_signal();
-        return 0;
-    }
-    
-    while(1)
-    {
-        if(mutex->lock == 1)
-            gtthread_yield();
-        else if(mutex->lock == 0)
         {
-            mutex->lock = 1;   
-            mutex->owner = gtthread_self();       
-            break;
+            gtthread_mutex_lock(&mutex);
+            shared = 2;
+            gtthread_mutex_unlock(&mutex);
         }
     }
-    unblock_signal();
-    return 0;
-}
-int  gtthread_mutex_unlock(gtthread_mutex_t *mutex)
-{
-    block_signal();
-    if(mutex->lock == 2)
-    {
-        unblock_signal();
-        return -1;
-    }
-    if(mutex->owner != gtthread_self())
-    {   
-        unblock_signal();
-        return -1;
-    }
-    mutex->lock = 0;
-    unblock_signal();
-    return 0;
 }
 
-/*
 void main()
 {
     printf("in main\n");
@@ -381,6 +291,8 @@ void main()
     int j;
     printf("%d\n",i++);
     gtthread_init(500000);
+    
+    gtthread_mutex_init(&mutex);
     printf("%d\n",i++);
     gtthread_t new_one;
     int *ret;
@@ -390,30 +302,32 @@ void main()
  //   struct Qnode *node = dequeue_sched();
    // print_scheduler_Q();
  //   block_signal();
-    struct Qnode *next = dequeue_sched();
-    struct  Qnode *prev = current_Qnode;
+ //   struct Qnode *next = dequeue_sched();
+   // struct  Qnode *prev = current_Qnode;
 
-    if(next == NULL || prev == NULL)
-        printf("a pointer is null");
-    if(swapcontext(&(prev->context), &(next->context)) < 0)
-         printf("not swapped\n");
+//    if(next == NULL || prev == NULL)
+ //       printf("a pointer is null");
+  //  if(swapcontext(&(prev->context), &(next->context)) < 0)
+   //      printf("not swapped\n");
 
-    printf("swapped\n");
-    for(i=0; i< 100000; i++)
+ //   printf("swapped\n");
+
+    for(i=0; i< 100; i++)
     {
-        for(j=0; j< 10000;j++)
+        for(j=0; j< 1000;j++)
         {
-            int k = 1;
+            gtthread_mutex_lock(&mutex);
+            shared = 1;
+            gtthread_mutex_unlock(&mutex);
         }
     }
     void *status;
-    int retval = gtthread_cancel(new_one);
-    printf("cancelled with %d\n", retval);
+    int retval = gtthread_join(new_one, status);
+    printf("joined with %d\n", retval);
 
 //    unblock_signal();
 
-    printf("here");
+    printf("%d", shared);
     return;
 }
 
-*/

@@ -28,6 +28,9 @@ extern struct gtthread *gtthread_head;
 extern struct gtthread *gtthread_tail;
 extern struct Qnode *scheduler_head;
 extern struct Qnode *scheduler_tail;
+extern struct Qnode *current_Qnode;
+extern struct itimerval timer;
+extern sigset_t mask;
 
 int enqueue_sched(Qnode *new_node);
 Qnode* dequeue_sched();
