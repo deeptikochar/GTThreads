@@ -17,7 +17,11 @@
 #include "structures.h"
 
 
-
+typedef struct gtthread_mutex_t
+{
+	int lock;                         // 0 -locked, 1-unlocked, 2 - not initialized
+	gtthread_t owner;
+} gtthread_mutex_t;
 
 
 /* Must be called before any of the below functions. Failure to do so may
@@ -65,11 +69,11 @@ void gtthread_scheduler(int signum);
 /* see man pthread_mutex(3); except init does not have the mutexattr parameter,
  * and should behave as if mutexattr is NULL (i.e., default attributes); also,
  * static initializers do not need to be implemented */
-/*
+
 int  gtthread_mutex_init(gtthread_mutex_t *mutex);
 int  gtthread_mutex_lock(gtthread_mutex_t *mutex);
 int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
-*/
+
 
 /* gtthread_mutex_destroy() and gtthread_mutex_trylock() do not need to be
  * implemented */
