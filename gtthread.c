@@ -19,14 +19,17 @@ void gtthread_init(long period)
 {
  //   printf("Enqueuing stuff\n");
     ucontext_t current;
+    struct Qnode *initial_node = malloc(sizeof(Qnode));
+    struct gtthread *initial_thread = malloc(sizeof(gtthread));
+
     getcontext(&current);
     
-    struct Qnode *initial_node = malloc(sizeof(Qnode));
+    
     initial_node->context = current;
     initial_node->next = NULL;
     initial_node->thread_id = generate_thread_id();
 
-    struct gtthread *initial_thread = malloc(sizeof(gtthread));
+    
     initial_thread->thread_id = initial_node->thread_id;
     initial_thread->status = ACTIVE;
     initial_thread->retval = NULL;
@@ -63,8 +66,8 @@ int  gtthread_create(gtthread_t *thread,
                      void *arg)
 {
     int retval = 0;
-    struct gtthread *new_gtthread = malloc(sizeof(gtthread));
     ucontext_t new_thread;
+    struct gtthread *new_gtthread = malloc(sizeof(gtthread));
     struct Qnode *new_node = malloc(sizeof(Qnode));
 
     //The value can change after reading - need to fix this. Disable context switch
@@ -108,6 +111,7 @@ int  gtthread_create(gtthread_t *thread,
 
 int  gtthread_join(gtthread_t thread, void **status)
 {
+    struct gtthread* to_be_joined;
     if(status != NULL)
         *status = NULL;
     if(gtthread_equal(gtthread_self(), thread) > 0)
@@ -116,7 +120,7 @@ int  gtthread_join(gtthread_t thread, void **status)
     // check the status. if it is finished get the return value
     // if it is active, wait
     //if it is cancelled print and return -1
-    struct gtthread* to_be_joined = search_thread_list(thread);
+    to_be_joined = search_thread_list(thread);
     if(to_be_joined == NULL)
         return -1;
     while(1)
@@ -135,14 +139,16 @@ int  gtthread_join(gtthread_t thread, void **status)
 
 void gtthread_exit(void *retval)
 {
+    gtthread_t thread_id;
+    struct gtthread *ptr;
     // might need to block signals
     //atomic_fetch_sub(num_threads, 1);
     block_signal();
-//    printf("In gtthread_exit\n");
+//    printf(;"In gtthread_exit\n");
     num_threads--;
 
-    gtthread_t thread_id = current_Qnode->thread_id;
-    struct gtthread *ptr = search_thread_list(thread_id);
+    thread_id = current_Qnode->thread_id;
+    ptr = search_thread_list(thread_id);
 
     if(ptr == NULL)
         //do something here
@@ -181,11 +187,13 @@ int  gtthread_equal(gtthread_t t1, gtthread_t t2)
 
 int  gtthread_cancel(gtthread_t thread)
 {
+    int retval = 0;
+    struct gtthread *ptr;
     //might need to block signals
     block_signal();
-    int retval = 0;
+    
     num_threads--;
-    struct gtthread *ptr = search_thread_list(thread);
+    ptr = search_thread_list(thread);
 
     if(thread == gtthread_self())
     {
@@ -261,7 +269,7 @@ gtthread_t generate_thread_id()
 
 
 
-
+/*
 
 
 int shared = 0;
@@ -331,3 +339,4 @@ void main()
     return;
 }
 
+*/

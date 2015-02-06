@@ -3,8 +3,11 @@
 
 int  gtthread_mutex_init(gtthread_mutex_t *mutex)
 {
+	if(mutex == NULL)
+		return -1;
     mutex->lock = 0;
-    mutex->owner = 0;   
+    mutex->owner = 0;
+    return 0;   
 }
 
 int  gtthread_mutex_lock(gtthread_mutex_t *mutex)

@@ -35,9 +35,9 @@ Qnode* dequeue_sched()
 
 int delete_from_queue_sched(gtthread_t thread_id)
 {
+    int retval = -1;
     struct Qnode *ptr = scheduler_head;
     struct Qnode *to_be_deleted;
-    int retval = -1;
 
   //  printf("In delete_from_queue_sched\n");
     if(scheduler_head->thread_id == thread_id)
@@ -112,8 +112,9 @@ gtthread* search_thread_list(gtthread_t thread_id)
 
 void print_scheduler_Q()
 {
-    printf("Printing scheduler queue\n");
     struct Qnode *ptr = scheduler_head;
+    printf("Printing scheduler queue\n");
+    
     while(ptr != NULL)
     {
         printf("%lu\n", ptr->thread_id);
@@ -122,8 +123,9 @@ void print_scheduler_Q()
 }
 void print_thread_list()
 {
-    printf("Printing thread list\n");
     struct gtthread *ptr = gtthread_head;
+    printf("Printing thread list\n");
+    
     while(ptr != NULL)
     {
         printf("%lu status: %d\n", ptr->thread_id, ptr->status);
