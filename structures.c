@@ -39,7 +39,6 @@ int delete_from_queue_sched(gtthread_t thread_id)
     struct Qnode *ptr = scheduler_head;
     struct Qnode *to_be_deleted;
 
-  //  printf("In delete_from_queue_sched\n");
     if(scheduler_head->thread_id == thread_id)
     {
         scheduler_head = NULL;
@@ -52,7 +51,6 @@ int delete_from_queue_sched(gtthread_t thread_id)
     {
         if(ptr->next->thread_id == thread_id)
         {
-    //        printf("Found thread %lu\n", thread_id );
             retval = 0;
             break;
         }
@@ -72,17 +70,14 @@ int delete_from_queue_sched(gtthread_t thread_id)
 void insert_thread_list(gtthread *thread)
 {
 	thread->next = NULL;
- //   printf("a\n");
 	if(gtthread_head == NULL)
 	{
 		gtthread_head = thread;                                                                                                                                  
 		gtthread_tail = thread;
-//        printf("%lu\n %p\n", gtthread_head->thread_id, gtthread_head);
 		return;
 	}
 	gtthread_tail->next = thread;                                                                                                                                              
 	gtthread_tail = thread;
- //   printf("%lu\n", gtthread_tail->thread_id);
 }
 
 int if_exists_thread_id(gtthread_t thread_id)

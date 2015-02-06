@@ -9,7 +9,7 @@ RANLIB  = ranlib
 
 LIBRARY = gtthread.a
 
-LIB_SRC = gtthread.c gtthread_sched.c gtthread_mutex.c
+LIB_SRC = structures.c gtthread.c gtthread_sched.c gtthread_mutex.c
 
 LIB_OBJ = $(patsubst %.c,%.o,$(LIB_SRC))
 
@@ -22,6 +22,14 @@ all: $(LIBRARY)
 $(LIBRARY): $(LIB_OBJ)
 	$(AR) $(LIBRARY) $(LIB_OBJ)
 	$(RANLIB) $(LIBRARY)
+
+#dining_philosophers: dining_philosophers.o gtthread.a
+#	$(CC) $(CFLAGS) -I.  $< -o $@
+
+dining_philosophers: dining_philosophers.c gtthread.a gtthread.h
+	$(CC) $(CFLAGS) -I. $< -o $@
+
+
 
 clean:
 	$(RM) $(LIBRARY) $(LIB_OBJ)

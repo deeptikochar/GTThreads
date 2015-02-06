@@ -1,11 +1,10 @@
 
-#include "gtthread.h"
+#include <gtthread.h>
 
 #define NUM_CHOPSTICKS 5
 #define MAX_DURATION 100000000
 
 int chopstick[NUM_CHOPSTICKS];
-//gtthread_mutex_t chopstick_mutex[NUM_CHOPSTICKS];
 gtthread_mutex_t pick_up_chopsticks;
 
 
@@ -33,6 +32,7 @@ void eat(int duration, int phil_num)
 			break;
 		}
 		gtthread_mutex_unlock(&pick_up_chopsticks);
+		gtthread_yield();
 	}
 	int i;
 	for(i = 0; i < duration; i++);
@@ -52,7 +52,7 @@ int philosopher(int phil_num)
 	int duration;
 	srand(time(NULL));
 	
-	//wait for this duration before starting to eat
+	/*wait for this duration before starting to eat */
 	while(1)
 	{
 		duration = rand() % MAX_DURATION;
@@ -73,7 +73,6 @@ int main()
 	for (i = 0; i < NUM_CHOPSTICKS; i++)
 	{
 		chopstick[i] = 1;
-		//gtthread_mutex_init(&chopstick_mutex[i]);
 	}
 
 	for(i = 0; i < NUM_CHOPSTICKS; i++)

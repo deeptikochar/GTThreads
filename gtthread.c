@@ -1,6 +1,5 @@
 #include "gtthread.h"
 
-//_Atomic(int) *num_threads = 0;
 int num_threads = 0;
 struct sigaction sig_act;
 struct itimerval timer;
@@ -17,7 +16,6 @@ void mock_scheduler(int signum);
 
 void gtthread_init(long period)
 {
- //   printf("Enqueuing stuff\n");
     ucontext_t current;
     struct Qnode *initial_node = malloc(sizeof(Qnode));
     struct gtthread *initial_thread = malloc(sizeof(gtthread));
@@ -34,19 +32,17 @@ void gtthread_init(long period)
     initial_thread->status = ACTIVE;
     initial_thread->retval = NULL;
 
-//    printf("%lu\n", initial_thread->thread_id);
-
     insert_thread_list(initial_thread);
-//    enqueue_sched(initial_node);   - don't enqueue the current thread
+
     current_Qnode = initial_node;
 
-//    printf("%p\n", gtthread_head);
+
 
     
-    // Setting the timer
-//    printf("Setting the timer\n");
-    memset(&sig_act, 0, sizeof(&sig_act));
-    sig_act.sa_handler = &gtthread_scheduler;         //change to actual scheduler
+    /* Setting the timer */
+
+    memset(&sig_act, 0, sizeof(sig_act));
+    sig_act.sa_handler = &gtthread_scheduler;         
     sigaction(SIGVTALRM, &sig_act, NULL);
 
     sigemptyset(&mask);
@@ -70,23 +66,20 @@ int  gtthread_create(gtthread_t *thread,
     struct gtthread *new_gtthread = malloc(sizeof(gtthread));
     struct Qnode *new_node = malloc(sizeof(Qnode));
 
-    //The value can change after reading - need to fix this. Disable context switch
     block_signal();
     if(num_threads < MAX_NUM_THREADS)
     {
-        //atomic_fetch_add(num_threads, 1);
-	num_threads++;
+	   num_threads++;
     }
     else
         return -1;
 
     
     *thread = generate_thread_id();   
-    unblock_signal();
 
     new_gtthread->thread_id = *thread;
- //   printf("%lu\n", new_gtthread->thread_id);
-    new_gtthread->status = ACTIVE;                    // Need to decide what status to give it
+
+    new_gtthread->status = ACTIVE;                    
     new_gtthread->retval = NULL;
     
     getcontext(&new_thread);    
@@ -94,7 +87,7 @@ int  gtthread_create(gtthread_t *thread,
     new_thread.uc_stack.ss_sp = malloc(STACK_SIZE);
     new_thread.uc_stack.ss_size = STACK_SIZE;
     new_thread.uc_stack.ss_flags = 0;
-    makecontext(&new_thread, (void *) gtthread_run, 2, start_routine, arg);  
+    makecontext(&new_thread, (void (*)(void)) gtthread_run, 2, start_routine, arg);  
     if(retval < 0)
         return retval;
     
@@ -104,6 +97,7 @@ int  gtthread_create(gtthread_t *thread,
 
     insert_thread_list(new_gtthread);
     retval = enqueue_sched(new_node);
+    unblock_signal();
 
     return retval;
 }
@@ -117,22 +111,20 @@ int  gtthread_join(gtthread_t thread, void **status)
     if(gtthread_equal(gtthread_self(), thread) > 0)
         return -1;
 
-    // check the status. if it is finished get the return value
-    // if it is active, wait
-    //if it is cancelled print and return -1
+    /* check the status. if it is finished get the return value
+    if it is active, wait
+    if it is cancelled print and return -1 */
     to_be_joined = search_thread_list(thread);
     if(to_be_joined == NULL)
         return -1;
     while(1)
     {
-        if(to_be_joined->status == FINISHED)
+        if(to_be_joined->status == FINISHED || to_be_joined->status == CANCELLED)
         {
             if(status != NULL)
                 *status = to_be_joined->retval;
             return 0;
         }
-        if(to_be_joined->status == CANCELLED)
-            return -1;
         gtthread_yield();
     }
 }
@@ -141,45 +133,38 @@ void gtthread_exit(void *retval)
 {
     gtthread_t thread_id;
     struct gtthread *ptr;
-    // might need to block signals
-    //atomic_fetch_sub(num_threads, 1);
+
     block_signal();
-//    printf(;"In gtthread_exit\n");
     num_threads--;
 
-    thread_id = current_Qnode->thread_id;
+    thread_id = gtthread_self();
     ptr = search_thread_list(thread_id);
 
     if(ptr == NULL)
-        //do something here
         return;
     else
     {
         ptr->status = FINISHED;
         ptr->retval = retval;
     }
-    //free Qnode - make sure its not used again till it's set
+    /*free Qnode - make sure its not used again till it's set*/
     free(current_Qnode);
-    unblock_signal();
-    //call scheduler - make sure it doesn't use current_Qnode
+    /*call scheduler - make sure it doesn't use current_Qnode*/
     gtthread_scheduler(-1);
 }
 
 
 int  gtthread_yield(void)
-{
-    //reset timer
-    //call scheduler - put at end of queue
- //   setitimer(ITIMER_VIRTUAL, &timer, NULL);          
-    gtthread_scheduler(0);          //what int to pass here - maybe set the timer from scheduler based on what we pass here
+{         
+    gtthread_scheduler(0); 
+    return 0;
 
-    //return stuff
 }
 
 int  gtthread_equal(gtthread_t t1, gtthread_t t2)
 {
     if(t1 == t2)
-        return 1;           //check what pthread_equal returns
+        return 1;           
     else
         return 0;
 }
@@ -189,18 +174,13 @@ int  gtthread_cancel(gtthread_t thread)
 {
     int retval = 0;
     struct gtthread *ptr;
-    //might need to block signals
+
     block_signal();
     
     num_threads--;
     ptr = search_thread_list(thread);
 
-    if(thread == gtthread_self())
-    {
-        printf("Cannot cancel self\n");
-        unblock_signal();
-        return -1;
-    }
+    
     if(ptr == NULL)
     {
         printf("This thread doesn't exist\n");
@@ -220,11 +200,17 @@ int  gtthread_cancel(gtthread_t thread)
         return -1;
     }
     ptr->status = CANCELLED;
-    //ptr->retval = -1;
+    ptr->retval = ((void *)(size_t) -1);
+
+    if(thread == gtthread_self())
+    {
+        free(current_Qnode);
+        gtthread_scheduler(-1);
+        return 0;
+    }
 
     retval = delete_from_queue_sched(thread);
     unblock_signal();
-
     return retval;
 }
 
@@ -238,14 +224,14 @@ gtthread_t gtthread_self(void)
 }
 
 
-int gtthread_run(void* (*start_routine)(void*), void *arg)
+void gtthread_run(void* (*start_routine)(void*), void *arg)
 {
-//    printf("In gtthread_run\n");
+
     void *retval;
-    //need to set retval somehow
-    retval = (void *) start_routine(arg);          //check
+
+    retval = (void *) start_routine(arg);          
     gtthread_exit(retval);
-    return 0;
+    return;
 }
 
 gtthread_t generate_thread_id()
@@ -256,7 +242,7 @@ gtthread_t generate_thread_id()
     
     while(1)
     {
-        thread_id = (unsigned long) rand();           // try making a long random number
+        thread_id = (unsigned long) rand();          
         if(!if_exists_thread_id(thread_id))
         {
             unblock_signal();

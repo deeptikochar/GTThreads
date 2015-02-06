@@ -37,7 +37,7 @@ Qnode* dequeue_sched();
 int delete_from_queue_sched(gtthread_t thread_id);
 
 void insert_thread_list(gtthread *thread);
-gtthread* search_thread_list(gtthread_t thread_id);        //Returns ptr if the thread_id is present, NULL if not
+gtthread* search_thread_list(gtthread_t thread_id);        /*Returns ptr if the thread_id is present, NULL if not*/
 int if_exists_thread_id(gtthread_t thread_id);
 
 

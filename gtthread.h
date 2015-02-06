@@ -6,12 +6,12 @@
 #define MAX_NUM_THREADS 150
 #define STACK_SIZE 10240
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <ucontext.h>
-//#include <stdatomic.h>
 #include <signal.h>
 #include <sys/time.h>
 #include "structures.h"
@@ -19,7 +19,7 @@
 
 typedef struct gtthread_mutex_t
 {
-	int lock;                         // 0 -locked, 1-unlocked, 2 - not initialized
+	int lock;                         /* 0 -locked, 1-unlocked, 2 - not initialized */
 	gtthread_t owner;
 } gtthread_mutex_t;
 
@@ -58,7 +58,7 @@ int  gtthread_cancel(gtthread_t thread);
 /* see man pthread_self(3) */
 gtthread_t gtthread_self(void);
 
-int gtthread_run(void* (*start_routine)(void*), void *arg);
+void gtthread_run(void* (*start_routine)(void*), void *arg);
 gtthread_t generate_thread_id();
 
 void block_signal();
@@ -81,4 +81,4 @@ int  gtthread_mutex_unlock(gtthread_mutex_t *mutex);
 
 
 
-#endif // __GTTHREAD_H
+#endif /* __GTTHREAD_H */
