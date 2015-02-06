@@ -1,21 +1,31 @@
-CC = gcc            # default is CC = cc
-CFLAGS = -g -Wall   # default is CFLAGS = [blank]
-CPPFLAGS =          # default is CPPFLAGS = [blank]
+#### GTThread Library Makefile
 
+CFLAGS  = -Wall -pedantic
+LFLAGS  =
+CC      = gcc
+RM      = /bin/rm -rf
+AR      = ar rc
+RANLIB  = ranlib
 
-# default compile command: $(CC) $(CFLAGS) $(CPPFLAGS) -c -o <foo>.o <foo>.c
+LIBRARY = gtthread.a
 
-all: gtthread
+LIB_SRC = gtthread.c gtthread_sched.c gtthread_mutex.c
 
-gtthread: gtthread.h gtthread.c
-	$(CC) -o $@ $< $(CFLAGS) 
-# default linking command: $(CC) $(LDFLAGS) <foo>.o -o <foo>
+LIB_OBJ = $(patsubst %.c,%.o,$(LIB_SRC))
 
-#gtthread.o: gtthread.h gtthread.c 
-#	$(CC) -o $@ $< $(CFLAGS) 
+# pattern rule for object files
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
 
-structures.o: structures.h structures.c
-	$(CC) -o $@ $< $(CFLAGS) 
+all: $(LIBRARY)
+
+$(LIBRARY): $(LIB_OBJ)
+	$(AR) $(LIBRARY) $(LIB_OBJ)
+	$(RANLIB) $(LIBRARY)
 
 clean:
-	$(RM) -f *.o gtthread
+	$(RM) $(LIBRARY) $(LIB_OBJ)
+
+.PHONY: depend
+depend:
+	$(CFLAGS) -- $(LIB_SRC)  2>/dev/null
