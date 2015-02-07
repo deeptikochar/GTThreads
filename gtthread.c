@@ -111,9 +111,6 @@ int  gtthread_join(gtthread_t thread, void **status)
     if(gtthread_equal(gtthread_self(), thread) > 0)
         return -1;
 
-    /* check the status. if it is finished get the return value
-    if it is active, wait
-    if it is cancelled print and return -1 */
     to_be_joined = search_thread_list(thread);
     if(to_be_joined == NULL)
         return -1;
@@ -147,9 +144,8 @@ void gtthread_exit(void *retval)
         ptr->status = FINISHED;
         ptr->retval = retval;
     }
-    /*free Qnode - make sure its not used again till it's set*/
+
     free(current_Qnode);
-    /*call scheduler - make sure it doesn't use current_Qnode*/
     gtthread_scheduler(-1);
 }
 
@@ -228,7 +224,6 @@ void gtthread_run(void* (*start_routine)(void*), void *arg)
 {
 
     void *retval;
-
     retval = (void *) start_routine(arg);          
     gtthread_exit(retval);
     return;
@@ -250,79 +245,3 @@ gtthread_t generate_thread_id()
         }
     } 
 }
-
-
-
-
-
-/*
-
-
-int shared = 0;
-struct gtthread_mutex_t mutex;
-
-void mock_scheduler(int signum)
-{
- //   printf("This is a new thread\n");
-    int i, j, k;
-    for (i = 0; i < 100; i++)
-    {
-        for(j = 0; j < 100; j++)
-        {
-            gtthread_mutex_lock(&mutex);
-            shared = 2;
-            gtthread_mutex_unlock(&mutex);
-        }
-    }
-}
-
-void main()
-{
-    printf("in main\n");
-    //gtthread_t thread = generate_thread_id();
-    //printf("%lu\n", thread );
-    int i = 1;
-    int j;
-    printf("%d\n",i++);
-    gtthread_init(500000);
-    
-    gtthread_mutex_init(&mutex);
-    printf("%d\n",i++);
-    gtthread_t new_one;
-    int *ret;
-    gtthread_create(&new_one, (void *) &mock_scheduler, (void *) ret);
-    print_scheduler_Q();
-    print_thread_list();
- //   struct Qnode *node = dequeue_sched();
-   // print_scheduler_Q();
- //   block_signal();
- //   struct Qnode *next = dequeue_sched();
-   // struct  Qnode *prev = current_Qnode;
-
-//    if(next == NULL || prev == NULL)
- //       printf("a pointer is null");
-  //  if(swapcontext(&(prev->context), &(next->context)) < 0)
-   //      printf("not swapped\n");
-
- //   printf("swapped\n");
-
-    for(i=0; i< 100; i++)
-    {
-        for(j=0; j< 1000;j++)
-        {
-            gtthread_mutex_lock(&mutex);
-            shared = 1;
-            gtthread_mutex_unlock(&mutex);
-        }
-    }
-    void *status;
-    int retval = gtthread_join(new_one, status);
-    printf("joined with %d\n", retval);
-
-//    unblock_signal();
-
-    printf("%d", shared);
-    return;
-}
-
-*/

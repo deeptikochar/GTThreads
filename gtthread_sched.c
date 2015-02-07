@@ -36,7 +36,7 @@ void gtthread_scheduler(int signum)
     /* switch context */
     if(signum >= 0)
     {
-        if(swapcontext(&(prev_Qnode->context), &(current_Qnode->context)) < 0)                /*if there is an error - decide what to do here*/
+        if(swapcontext(&(prev_Qnode->context), &(current_Qnode->context)) < 0)          
             return;
 
     }
