@@ -1,4 +1,4 @@
-
+#include <stdint.h>
 #include "gtthread.h"
 
 #define NUM_CHOPSTICKS 5
@@ -48,7 +48,7 @@ void eat(int duration, int phil_num)
 	return;
 }
 
-void* philosopher(int phil_num)
+void* philosopher(void *phil_num)
 {
 	int duration;
 	srand(time(NULL));
@@ -56,9 +56,9 @@ void* philosopher(int phil_num)
 	while(1)
 	{
 		duration = rand() % MAX_DURATION;           
-		think(duration, phil_num);
+		think(duration, (int) (intptr_t) phil_num);
 		duration = rand() % MAX_DURATION;
-		eat(duration, phil_num);
+		eat(duration, (int) (intptr_t) phil_num);
 	}
 	return NULL;
 }
@@ -67,8 +67,9 @@ int main()
 {
 	int i;
 	long period = 1000;
-	gtthread_init(period);
 	gtthread_t philosopher_thread[NUM_CHOPSTICKS];
+	gtthread_init(period);
+	
 
 	for (i = 0; i < NUM_CHOPSTICKS; i++)
 	{
@@ -78,7 +79,7 @@ int main()
 	for(i = 0; i < NUM_CHOPSTICKS; i++)
 	{
 
-		if(gtthread_create(&philosopher_thread[i], philosopher, (i+1) ) < 0)
+		if(gtthread_create(&philosopher_thread[i], philosopher,(void*) (intptr_t) (i+1) ) < 0)
 			return -1;
 	}
 	
