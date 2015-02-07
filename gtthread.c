@@ -12,8 +12,6 @@ struct gtthread *gtthread_head = NULL;
 struct gtthread *gtthread_tail = NULL;
 
 
-void mock_scheduler(int signum);
-
 void gtthread_init(long period)
 {
     ucontext_t current;
@@ -179,19 +177,16 @@ int  gtthread_cancel(gtthread_t thread)
     
     if(ptr == NULL)
     {
-        printf("This thread doesn't exist\n");
         unblock_signal();
         return -1;
     }
     else if(ptr->status == CANCELLED)
     {
-        printf("This thread has already been cancelled\n");
         unblock_signal();
         return -1;
     }
     else if(ptr->status == FINISHED)
     {
-        printf("This thread has already finished\n");
         unblock_signal();
         return -1;
     }
